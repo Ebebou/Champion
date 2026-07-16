@@ -1,0 +1,168 @@
+/* ==========================================
+   1. VARIABLES ET THÈMES (Light Mode par défaut)
+   ========================================== */
+:root {
+  --bg-color: #fafafa;
+  --text-primary: #1e1e1e;
+  --text-secondary: #707070;
+  --btn-bg: #007aff;
+  /* Bleu iOS/Sleek standard */
+  --btn-text: #fafafa;
+  --logo-bg: #ffffff;
+  --logo-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Mode Sombre automatique */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1e1e1e;
+    --text-primary: #fafafa;
+    --text-secondary: #a0a0a0;
+    --btn-bg: #007aff;
+    --btn-text: #fafafa;
+    --logo-bg: #ffffff;
+    --logo-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* ==========================================
+   2. STYLES DE BASE & RESET
+   ========================================== */
+.presentation-body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 20px;
+  width: 100%;
+}
+
+/* ==========================================
+   3. DISPOSITION RESPONSIVE (Desktop First/Centré)
+   ========================================== */
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  max-width: 900px;
+  width: 100%;
+}
+
+/* Wrapper du logo blanc carré */
+.logo-wrapper {
+  background-color: var(--logo-bg);
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--logo-shadow);
+  border-radius: 4px;
+  /* Un léger arrondi propre */
+  flex-shrink: 0;
+}
+
+.app-logo {
+  width: 85%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Contenu textuel */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.app-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.app-tagline {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Zone d'action */
+.action-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.btn-primary {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0062cc;
+}
+
+.btn-primary:active {
+  transform: scale(0.96);
+}
+
+.badge-free {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================
+   4. MEDIA QUERY MOBILE (Responsive)
+   ========================================== */
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+    text-align: center;
+    gap: 32px;
+  }
+
+  .logo-wrapper {
+    width: 160px;
+    height: 160px;
+  }
+
+  .content-wrapper {
+    align-items: center;
+  }
+
+  .app-title {
+    font-size: 2rem;
+  }
+
+  .app-tagline {
+    font-size: 1.1rem;
+  }
+
+  .action-area {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .btn-primary {
+    width: 100%;
+    /* Le bouton prend toute la largeur sur mobile */
+    max-width: 280px;
+  }
+}

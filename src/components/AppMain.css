@@ -1,0 +1,171 @@
+/* 1. IMPORTATION DE LA POLICE LOCALE */
+@font-face {
+    font-family: 'BBH Bartle';
+    src: url('/src/assets/BBHBartle-Regular.ttf') format('truetype');
+    /* Ajuste l'extension si c'est du .woff ou .woff2 */
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 2. RESET COMPLET */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --transition-speed: 0.3s;
+}
+
+/* Thème Sombre (1E1E1E) */
+html.dark {
+    --bg-color: #1E1E1E;
+    --text-color: #ffffff;
+    --btn-install-bg: #007aff;
+    /* Couleur du bouton installer bleu */
+}
+
+/* Thème Clair (FAFAFA) */
+html.light {
+    --bg-color: #FAFAFA;
+    --text-color: #1E1E1E;
+    --btn-install-bg: #007aff;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'BBH Bartle', -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+/* 3. SPLASH SCREEN (OPEN DISPLAY) */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* On utilise l'image du logo directement sur le fond, sans boîte blanche */
+.splash-logo {
+    width: 180px;
+    /* Taille ajustable selon tes préférences */
+    height: auto;
+    object-fit: contain;
+    /* En mode sombre, si ton logo original est noir, on l'inverse pour qu'il s'affiche en blanc */
+}
+
+html.dark .splash-logo {
+    filter: invert(1);
+}
+
+.splash-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 4. CONTENU PRINCIPAL */
+.app-content {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-content.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Bouton invisible/très discret pour changer de thème au clic sur le fond ou via un raccourci */
+.theme-invisible-trigger {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    color: var(--text-color);
+    opacity: 0.15;
+    /* Très discret pour garder le design ultra épuré de tes maquettes */
+    transition: opacity 0.2s;
+}
+
+.theme-invisible-trigger:hover {
+    opacity: 0.8;
+}
+
+/* 5. HERO SECTION (TEXTE CENTRÉ) */
+.hero-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+}
+
+.sub-title {
+    font-family: 'BBH Bartle', sans-serif;
+    font-size: 1.4rem;
+    /* S'adapte au style écrasé de ta maquette */
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+}
+
+.main-title {
+    font-family: 'BBH Bartle', sans-serif;
+    font-size: 3.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1;
+}
+
+/* RESPONSIVE DESIGN POUR MOBILE */
+@media (max-width: 600px) {
+    h3 {
+        font-size: 1.3rem;
+    }
+
+    .sub-title {
+        font-size: 1rem;
+        margin-bottom: 16px;
+    }
+
+    .main-title {
+        font-size: 2.3rem;
+    }
+}
+
+@media (max-width: 425px) {
+    h3 {
+        font-size: 1rem;
+    }
+
+    .sub-title {
+        font-size: 0.7rem;
+        margin-bottom: 16px;
+    }
+
+    .main-title {
+        font-size: 1.5rem;
+    }
+
+}
