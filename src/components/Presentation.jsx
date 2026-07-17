@@ -5,16 +5,17 @@ export default function Presentation() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [buttonText, setButtonText] = useState('Installer');
   const [isIOS, setIsIOS] = useState(false);
-  const [showIOSInstruction, setShowIOSInstruction] = useState(false);
+  const [showIOSModal, setShowIOSModal] = useState(false);
 
   useEffect(() => {
     // 1. Détection du système iOS (Apple)
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIphoneOrIpad = /iphone|ipad|ipod/.test(userAgent);
+    const isIphoneOrIpad = /iphone|ipad|ipod/.test(userAgent) || 
+                           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // Détecte aussi les iPads récents
     setIsIOS(isIphoneOrIpad);
 
     if (isIphoneOrIpad) {
-      setButtonText("Comment installer");
+      setButtonText("Installer l'application");
     }
 
     // 2. Détection du mode autonome (PWA déjà installée)
@@ -52,13 +53,13 @@ export default function Presentation() {
   }, []);
 
   const handleInstallClick = async () => {
-    // Si l'utilisateur est sur iPhone, on lui affiche le guide visuel sous le bouton
+    // Si l'utilisateur est sur iOS, on ouvre le guide visuel d'installation
     if (isIOS) {
-      setShowIOSInstruction(!showIOSInstruction);
+      setShowIOSModal(true);
       return;
     }
 
-    // Si l'application est déjà installée ou si le prompt Chrome n'est pas dispo, on va sur l'app
+    // Si l'application est déjà installée ou si le prompt Chrome n'est pas dispo, direction l'app
     if (buttonText.includes('Ouvrir') || !deferredPrompt) {
       window.location.href = '/app';
       return;
@@ -80,7 +81,7 @@ export default function Presentation() {
         
         <div className="logo-wrapper">
           <img 
-            src="/logo 500x500.png" 
+            src="./logo 500x500.png" 
             alt="Champion Logo" 
             className="app-logo" 
           />
@@ -90,7 +91,7 @@ export default function Presentation() {
           <h1 className="app-title">Champion</h1>
           <p className="app-tagline">Débout champion</p>
           
-          <div className="action-area" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+          <div className="action-area">
             <button 
               onClick={handleInstallClick} 
               className="btn-primary"
@@ -98,40 +99,95 @@ export default function Presentation() {
               {buttonText}
             </button>
             <span className="badge-free">Application gratuite</span>
-
-            {/* Section d'instructions animée pour iOS */}
-            {isIOS && showIOSInstruction && (
-              <div style={{
-                marginTop: '15px',
-                padding: '16px',
-                borderRadius: '12px',
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                fontSize: '0.9rem',
-                lineHeight: '1.5',
-                color: '#ffffff',
-                maxWidth: '290px',
-                textAlign: 'left',
-                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
-              }}>
-                <p style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ffcc00' }}>
-                  Suis ces étapes rapides sur Safari :
-                </p>
-                <ol style={{ paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <li>
-                    Appuie sur le bouton de <strong>Partage</strong> <span style={{ fontSize: '1.1rem' }}>📤</span> tout en bas (ou en haut sur iPad).
-                  </li>
-                  <li>
-                    Fais défiler les options et sélectionne <strong>« Sur l'écran d'accueil »</strong> <span style={{ fontSize: '1.1rem' }}>➕</span>.
-                  </li>
-                </ol>
-              </div>
-            )}
           </div>
         </div>
 
       </main>
+
+      {/* 🍏 POP-UP D'INSTALLATION DE STYLE APPLE POUR IOS */}
+      {isIOS && showIOSModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div style={{
+            backgroundColor: '#1E1E1E',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: '28px 20px',
+            maxWidth: '320px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+            position: 'relative',
+            color: '#ffffff'
+          }}>
+            
+            {/* Petit indicateur de drag type iOS */}
+            <div style={{
+              width: '40px',
+              height: '5px',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '3px',
+              margin: '-12px auto 16px auto'
+            }}></div>
+
+            <img 
+              src="./logo 500x500.png" 
+              alt="Logo Champion" 
+              style={{ width: '70px', height: '70px', borderRadius: '16px', marginBottom: '16px' }}
+            />
+            
+            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '8px' }}>
+              Installer Champion
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '24px', padding: '0 10px' }}>
+              Ajoute l'application à ton écran d'accueil pour y accéder à tout moment.
+            </p>
+
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <span style={{ fontSize: '1.6rem', background: 'rgba(255,255,255,0.08)', padding: '8px', borderRadius: '12px' }}>📤</span>
+                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4' }}>
+                  1. Appuie sur le bouton de <strong>Partage</strong> tout en bas dans la barre d'outils de Safari.
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <span style={{ fontSize: '1.6rem', background: 'rgba(255,255,255,0.08)', padding: '8px', borderRadius: '12px' }}>➕</span>
+                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4' }}>
+                  2. Fais défiler les options et sélectionne <strong>« Sur l'écran d'accueil »</strong>.
+                </p>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowIOSModal(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: 'none',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: '#fff',
+                fontWeight: '600',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
