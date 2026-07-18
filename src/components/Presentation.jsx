@@ -1,87 +1,84 @@
 import React, { useEffect, useState } from 'react';
-import './Presentation.css'; // Importation directe de tes styles purs !
+import './Presentation.css';
 
 export default function Presentation() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [buttonText, setButtonText] = useState('Installer');
+  
+  // TOUTES les variables de détection sont déclarées ici pour éviter l'erreur !
   const [isIOS, setIsIOS] = useState(false);
-  const [showIOSModal, setShowIOSModal] = useState(false);
+  const [isAppleSafari, setIsAppleSafari] = useState(false);
+  const [isMac, setIsMac] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   useEffect(() => {
-    // 1. Détection du système iOS (Apple)
     const userAgent = window.navigator.userAgent.toLowerCase();
+    
+    // 1. Détecter l'iPhone / iPad pur (isIOS)
     const isIphoneOrIpad = /iphone|ipad|ipod/.test(userAgent) || 
-                           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // Détecte aussi les iPads récents
+                           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(isIphoneOrIpad);
 
-    if (isIphoneOrIpad) {
+    // 2. Détecter si c'est Safari globalement
+    const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
+    setIsAppleSafari(isSafari);
+
+    // 3. Détecter si c'est un Mac de bureau
+    const isMacbook = /macintosh|macintel/.test(userAgent) && !window.navigator.maxTouchPoints;
+    setIsMac(isMacbook);
+
+    if (isSafari || isIphoneOrIpad) {
       setButtonText("Installer l'application");
     }
 
-    // 2. Détection du mode autonome (PWA déjà installée)
+    // 4. Redirection si l'application est déjà installée
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
-      || window.navigator.standalone 
-      || document.referrer.includes('android-app://');
+      || window.navigator.standalone;
 
     if (isStandalone) {
       window.location.href = '/app';
     }
 
-    // 3. Gestionnaires d'événements pour Android / Windows / Chrome
+    // 5. Gestionnaire d'installation Android / Chrome
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      if (!isIphoneOrIpad) {
+      if (!isSafari && !isIphoneOrIpad) {
         setButtonText('Installer');
       }
     };
 
-    const handleAppInstalled = () => {
-      console.log('CHAMPION a été installé avec succès !');
-      setButtonText("Ouvrir l'application");
-      setDeferredPrompt(null);
-      window.location.href = '/app';
-    };
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
   const handleInstallClick = async () => {
-    // Si l'utilisateur est sur iOS, on ouvre le guide visuel d'installation
-    if (isIOS) {
-      setShowIOSModal(true);
+    // Si Safari ou iOS, on ouvre le pop-up d'aide
+    if (isAppleSafari || isIOS) {
+      setShowInstallModal(true);
       return;
     }
 
-    // Si l'application est déjà installée ou si le prompt Chrome n'est pas dispo, direction l'app
-    if (buttonText.includes('Ouvrir') || !deferredPrompt) {
-      window.location.href = '/app';
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        window.location.href = '/app';
+      }
       return;
     }
 
-    // Lancement du prompt d'installation officiel de Chrome/Android/Edge
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setButtonText("Ouvrir l'application");
-      setDeferredPrompt(null);
-    }
+    window.location.href = '/app';
   };
 
   return (
-    <div className="presentation-body">
+    <div className="presentation-body" style={{ minHeight: '100vh', position: 'relative' }}>
       <main className="container">
         
         <div className="logo-wrapper">
           <img 
-            src="./logo 500x500.png" 
+            src="/logo 500x500.png" 
             alt="Champion Logo" 
             className="app-logo" 
           />
@@ -104,87 +101,96 @@ export default function Presentation() {
 
       </main>
 
-      {/* 🍏 POP-UP D'INSTALLATION DE STYLE APPLE POUR IOS */}
-      {isIOS && showIOSModal && (
+      {/* Pop-up d'aide universel Apple */}
+      {(isAppleSafari || isIOS) && showInstallModal && (
         <div style={{
           position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.65)',
-          backdropFilter: 'blur(8px)',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 10000,
-          padding: '20px',
-          animation: 'fadeIn 0.3s ease'
+          zIndex: 99999,
+          padding: '20px'
         }}>
           <div style={{
             backgroundColor: '#1E1E1E',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '24px',
-            padding: '28px 20px',
-            maxWidth: '320px',
+            borderRadius: '20px',
+            padding: '25px 20px',
+            maxWidth: '310px',
             width: '100%',
             textAlign: 'center',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-            position: 'relative',
-            color: '#ffffff'
+            color: '#ffffff',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}>
-            
-            {/* Petit indicateur de drag type iOS */}
-            <div style={{
-              width: '40px',
-              height: '5px',
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '3px',
-              margin: '-12px auto 16px auto'
-            }}></div>
-
             <img 
-              src="./logo 500x500.png" 
-              alt="Logo Champion" 
-              style={{ width: '70px', height: '70px', borderRadius: '16px', marginBottom: '16px' }}
+              src="/logo 500x500.png" 
+              alt="Logo" 
+              style={{ width: '60px', height: '60px', borderRadius: '12px', marginBottom: '15px' }}
             />
-            
-            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '8px' }}>
-              Installer Champion
-            </h2>
-            <p style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '24px', padding: '0 10px' }}>
-              Ajoute l'application à ton écran d'accueil pour y accéder à tout moment.
+            <h2 style={{ fontSize: '1.2rem', margin: '0 0 10px 0', fontWeight: 'bold' }}>Installer Champion</h2>
+            <p style={{ fontSize: '0.85rem', color: '#aaa', margin: '0 0 20px 0', lineHeight: '1.4' }}>
+              Ajoute l'application sur ton {isMac ? 'Mac' : "écran d'accueil"} pour y accéder en un clic.
             </p>
 
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontSize: '1.6rem', background: 'rgba(255,255,255,0.08)', padding: '8px', borderRadius: '12px' }}>📤</span>
-                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4' }}>
-                  1. Appuie sur le bouton de <strong>Partage</strong> tout en bas dans la barre d'outils de Safari.
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontSize: '1.6rem', background: 'rgba(255,255,255,0.08)', padding: '8px', borderRadius: '12px' }}>➕</span>
-                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4' }}>
-                  2. Fais défiler les options et sélectionne <strong>« Sur l'écran d'accueil »</strong>.
-                </p>
-              </div>
+            <div style={{ textAlign: 'left', fontSize: '0.85rem', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {isMac ? (
+                <>
+                  <p style={{ margin: 0 }}>
+                    <strong>1.</strong> Clique sur l'icône de partage <strong>📤</strong> en haut à droite de Safari.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>2.</strong> Choisis l'option <strong>« Ajouter au Dock... »</strong> ➕.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ margin: 0 }}>
+                    <strong>1.</strong> Appuie sur le bouton de partage <strong>📤</strong> tout en bas de l'écran.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>2.</strong> Fais défiler et sélectionne <strong>« Sur l'écran d'accueil »</strong> ➕.
+                  </p>
+                </>
+              )}
             </div>
 
-            <button 
-              onClick={() => setShowIOSModal(false)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: 'none',
-                borderRadius: '14px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                color: '#fff',
-                fontWeight: '600',
-                fontSize: '0.95rem',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              Fermer
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => window.location.href = '/app'}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: 'transparent',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Plus tard
+              </button>
+              <button 
+                onClick={() => setShowInstallModal(false)}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: '#ffffff',
+                  color: '#000000',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Compris !
+              </button>
+            </div>
           </div>
         </div>
       )}
